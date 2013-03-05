@@ -1,4 +1,4 @@
 GeoReminder
 ===========
 
-Android geo app
+Androids organizer based on geolocation
