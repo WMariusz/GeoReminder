@@ -18,7 +18,7 @@ import android.widget.Toast;
 
 public class LocationView extends Activity implements LocationListener {
 
-	private TextView latituteField;
+	private TextView latitudeField;
 	private TextView longitudeField;
 	private TextView providerField;
 	private TextView targetLatField;
@@ -34,7 +34,7 @@ public class LocationView extends Activity implements LocationListener {
 		super.onCreate(savedInstanceState);
 	    setContentView(R.layout.activity_location);
 	    
-	    latituteField = (TextView) findViewById(R.id.TextView02);
+	    latitudeField = (TextView) findViewById(R.id.TextView02);
 	    longitudeField = (TextView) findViewById(R.id.TextView04);
 	    providerField = (TextView) findViewById(R.id.provider);
 	    targetLatField = (TextView) findViewById(R.id.targetLat);
@@ -53,7 +53,7 @@ public class LocationView extends Activity implements LocationListener {
 	    
 	    try { 
 	    	Location location = locationManager.getLastKnownLocation(provider);
-	    	latituteField.setText(String.valueOf(location.getLatitude()));
+	    	latitudeField.setText(String.valueOf(location.getLatitude()));
 	    	longitudeField.setText(String.valueOf(location.getLongitude()));
 	    	targetLocation = locationManager.getLastKnownLocation(provider);
 	    	distance.setText(String.valueOf(location.distanceTo(targetLocation)));
@@ -79,7 +79,7 @@ public class LocationView extends Activity implements LocationListener {
 	*/
 	
 	public void onLocationChanged(Location location) {
-	    latituteField.setText(String.valueOf(location.getLatitude()));
+	    latitudeField.setText(String.valueOf(location.getLatitude()));
 	    longitudeField.setText(String.valueOf(location.getLongitude()));
 	    float dist = location.distanceTo(targetLocation);
 	    distance.setText(String.valueOf(dist));
