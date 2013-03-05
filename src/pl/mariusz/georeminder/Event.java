@@ -9,10 +9,20 @@ public class Event {
 	private int id;
 	private String name;
 	private Date date;
-	private Location location;
+	//private Location location;
+	private float latitude;
+	private float longitude;
 	private String description;
 	
 	public Event() {
+	}
+	
+	public Event (String name, float latitude, float longitude, String description) {
+		this.id = id;
+		this.name = name;
+		this.latitude = latitude;
+		this.longitude = longitude;
+		this.description = description;
 	}
 	
 	public int getId() {
@@ -38,7 +48,7 @@ public class Event {
 	public Date getDate() {
 		return this.date;
 	}
-	
+	/*
 	public void setLocation(Location location) {
 		this.location = location;
 	}
@@ -46,13 +56,29 @@ public class Event {
 	public Location getLocation() {
 		return this.location;
 	}
-	
+	*/
 	public void setDescription(String description) {
 		this.description = description;
 	}
 	
 	public String getDescription() {
 		return this.description;
+	}
+
+	public float getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(float latitude) {
+		this.latitude = latitude;
+	}
+
+	public float getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(float longitude) {
+		this.longitude = longitude;
 	}
 
 	public boolean validate() {
