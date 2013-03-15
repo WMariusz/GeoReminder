@@ -1,1 +1,1 @@
-keytool -list -v -alias androiddebugkey -keystore .andtoid\debug.keystore -storepass android -keypass android 
+GeoReminder
