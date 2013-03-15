@@ -163,14 +163,17 @@ public class AddEvent extends FragmentActivity implements OnDateSetListener {
 	}
 
 	public void onDateSet(DatePicker view, int year, int month, int day) {
+		Calendar c = Calendar.getInstance();
+		c.set(year, month, day);
 		d.setDate(day);
 		d.setMonth(month);
 		d.setYear(year);
+		d = c.getTime();
+		
 		int flags = 0;
 		flags |= DateUtils.FORMAT_SHOW_DATE;
         flags |= DateUtils.FORMAT_SHOW_YEAR;
 		String str = DateUtils.formatDateTime(this, d.getTime(), flags);
-		description.setText(String.valueOf(d.getYear()));
 		date.setText(str);
 	}
 }
