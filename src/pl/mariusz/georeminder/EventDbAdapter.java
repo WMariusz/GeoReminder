@@ -31,6 +31,12 @@ public class EventDbAdapter {
 	public static final String DESCRIPTION_KEY = "description";
 	public static final String DESCRIPTION_OPTIONS = "TEXT NOT NULL";
 	public static final int DESCRIPTION_COLUMN = 4;
+	public static final String DATE_KEY = "date";
+    public static final String DATE_OPTIONS = "INTEGER";
+    public static final int DATE_COLUMN = 5;
+	public static final String COMPLETED_KEY = "completed";
+    public static final String COMPLETED_OPTIONS = "INTEGER DEFAULT 0";
+    public static final int COMPLETED_COLUMN = 6;
 	
 	private static final String DB_CREATE_EVENT_TABLE =
 			"CREATE TABLE " + DB_EVENT_TABLE + "( " +
@@ -38,7 +44,9 @@ public class EventDbAdapter {
 			NAME_KEY + " " + DESCRIPTION_OPTIONS + ", " +
 			LATITUDE_KEY + " " + LATITUDE_OPTIONS + ", " +
 			LONGITUDE_KEY + " " + LONGITUDE_OPTIONS + ", " +
-			DESCRIPTION_KEY  + " " + DESCRIPTION_OPTIONS +
+			DESCRIPTION_KEY  + " " + DESCRIPTION_OPTIONS + ", " +
+			DATE_KEY + " " + DATE_OPTIONS + ", " +
+			COMPLETED_KEY + " " + COMPLETED_OPTIONS +
 			");";
 	private static final String DROP_EVENT_TABLE =
 			"DROP TABLE IF EXISTS " + DB_EVENT_TABLE;
@@ -91,25 +99,28 @@ public class EventDbAdapter {
 		dbHelper.close();
 	}
 	
-	public long insertEvent(String name, float latitude, float longitude, String description) {
+	public long insertEvent(String name, double latitude, double longitude, String description, long date) {
 		ContentValues newEventValues = new ContentValues();
 		newEventValues.put(NAME_KEY, name);
 		newEventValues.put(LATITUDE_KEY, latitude);
 		newEventValues.put(LONGITUDE_KEY, longitude);
 		newEventValues.put(DESCRIPTION_KEY, description);
+		newEventValues.put(DATE_KEY, date);
 		return db.insert(DB_EVENT_TABLE, null, newEventValues);
 	}
 
-	public boolean updateTodo(Event event) {
+	public boolean updateEvent(Event event) {
 		int id = event.getId();
 		String name = event.getName();
-		float latitude = event.getLatitude();
-		float longitude = event.getLongitude();
+		double latitude = event.getLatitude();
+		double longitude = event.getLongitude();
 		String description = event.getDescription();
-		return updateTodo(id, name, latitude, longitude, description);
+		long date = event.getDate();
+		boolean completed = event.isCompleted();
+		return updateEvent(id, name, latitude, longitude, description, date, completed);
 	}
 
-	public boolean updateTodo(int id, String name, float latitude, float longitude, String description) {
+	public boolean updateEvent(int id, String name, double latitude, double longitude, String description, long date, boolean completed) {
 		String where = ID_KEY + "=" + id;
 		ContentValues updateEventValues = new ContentValues();
 		updateEventValues.put(NAME_KEY, name);
@@ -119,27 +130,29 @@ public class EventDbAdapter {
 		return db.update(DB_EVENT_TABLE, updateEventValues, where, null) > 0;
 	}
 
-	public boolean deleteTodo(int id){
+	public boolean deleteEvent(int id){
 		String where = ID_KEY + "=" + id;
 		return db.delete(DB_EVENT_TABLE, where, null) > 0;
 	}
 
 	public Cursor getAllEvents() {
-		String[] columns = {ID_KEY, NAME_KEY, LATITUDE_KEY, LONGITUDE_KEY, DESCRIPTION_KEY};
+		String[] columns = {ID_KEY, NAME_KEY, LATITUDE_KEY, LONGITUDE_KEY, DESCRIPTION_KEY, DATE_KEY, COMPLETED_KEY};
 		return db.query(DB_EVENT_TABLE, columns, null, null, null, null, null);
 	}
 
 	public Event getEvent(int id) {
-		String[] columns = {ID_KEY, NAME_KEY, LATITUDE_KEY, LONGITUDE_KEY, DESCRIPTION_KEY};
+		String[] columns = {ID_KEY, NAME_KEY, LATITUDE_KEY, LONGITUDE_KEY, DESCRIPTION_KEY, DATE_KEY, COMPLETED_KEY};
 		String where = ID_KEY + "=" + id;
 		Cursor cursor = db.query(DB_EVENT_TABLE, columns, where, null, null, null, null);
 		Event event = null;
 		if(cursor != null && cursor.moveToFirst()) {
 			String name = cursor.getString(NAME_COLUMN);
-			float latitude = cursor.getFloat(LATITUDE_COLUMN);
-			float longitude = cursor.getFloat(LONGITUDE_COLUMN);
+			double latitude = cursor.getDouble(LATITUDE_COLUMN);
+			double longitude = cursor.getDouble(LONGITUDE_COLUMN);
 			String description = cursor.getString(DESCRIPTION_COLUMN);
-			event = new Event(name, latitude, longitude, description);
+			long date = cursor.getLong(DATE_COLUMN);
+			boolean completed = (cursor.getInt(COMPLETED_COLUMN) != 0);
+			event = new Event(name, latitude, longitude, description, date, completed);
 		}
 		return event;
 	}

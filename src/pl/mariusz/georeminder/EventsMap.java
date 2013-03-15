@@ -16,6 +16,8 @@ import com.google.android.maps.OverlayItem;
 
 public class EventsMap extends MapActivity {
 
+	private static final String DEBUG_TAG = "EventMap";
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

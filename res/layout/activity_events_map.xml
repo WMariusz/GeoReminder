@@ -3,13 +3,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".EventsMap" >
-
+<!--
     <com.google.android.maps.MapView
     	xmlns:android="http://schemas.android.com/apk/res/android"
     	android:id="@+id/mapview"
     	android:layout_width="fill_parent"
     	android:layout_height="fill_parent"
     	android:clickable="true"
-    	android:apiKey="FA:30:EE:6C:F5:56:B2:A5:64:79:5E:3C:C0:1A:3F:C5:90:D6:EC:28" />
+    	android:apiKey="AIzaSyBvRYcnO5oPBXfqe0pBP2K1utoguu1SZ7w" />
+-->
 
+	<fragment
+        android:id="@+id/mapview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        class="com.google.android.gms.maps.MapFragment" />
 </RelativeLayout>

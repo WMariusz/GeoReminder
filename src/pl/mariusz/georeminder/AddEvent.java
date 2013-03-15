@@ -1,46 +1,54 @@
 package pl.mariusz.georeminder;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.DatePickerDialog.OnDateSetListener;
 import android.app.Dialog;
-import android.app.TimePickerDialog;
-import android.app.TimePickerDialog.OnTimeSetListener;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
-import android.text.format.DateFormat;
+import android.text.format.DateUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
-public class AddEvent extends FragmentActivity implements OnDateSetListener, OnTimeSetListener {
+public class AddEvent extends FragmentActivity implements OnDateSetListener {
 	
-	private Button time;
+	private TextView name;
 	private Button date;
+	private TextView description;
+	private EventDbAdapter eventDbAdapter;
+	private Date d; 
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_add_event);
-        int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-        int minute = Calendar.getInstance().get(Calendar.MINUTE);
-        int day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
-        int month = Calendar.getInstance().get(Calendar.MONTH) + 1;
-        int year = Calendar.getInstance().get(Calendar.YEAR);
-		time = (Button) findViewById(R.id.pick_time);
-		time.setText(hour+":"+minute);
+		d = new Date();
+        //int day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+        //int month = Calendar.getInstance().get(Calendar.MONTH) + 1;
+        //int year = Calendar.getInstance().get(Calendar.YEAR);
+
+		int flags = 0;
+		flags |= DateUtils.FORMAT_SHOW_DATE;
+        flags |= DateUtils.FORMAT_SHOW_YEAR;
+		String str = DateUtils.formatDateTime(this, d.getTime(), flags);
+		
+		name = (TextView) findViewById(R.id.eventName);
+		description = (TextView) findViewById(R.id.description);
 		date = (Button) findViewById(R.id.pick_date);
-		date.setText(day+"/"+month+"/"+year);
+		date.setText(str);
+		description.setText(d.toString());
 	}
 
 	@Override
@@ -70,42 +78,29 @@ public class AddEvent extends FragmentActivity implements OnDateSetListener, OnT
 	    return true;
 	}
 	
+	@SuppressLint("SimpleDateFormat")
 	private boolean createEvent() {
-		TextView name = (TextView) findViewById(R.id.eventName);
-		Button date = (Button) findViewById(R.id.pick_date);
-		Button time = (Button) findViewById(R.id.pick_time);
-		//TextView location = (TextView) findViewById(R.id.location);
-		TextView description = (TextView) findViewById(R.id.description);
 		Event event = new Event();		
 		
 		try {
 			event.setName(name.getText().toString());
-			
-			// TO DO get location from google map
-			//event.setLocation();
-			
+			event.setLatitude(0.0);
+			event.setLongitude(0.0);
 			event.setDescription(description.getText().toString());
+			event.setDate(d.getTime());
 		} catch (Exception e) {	
 			Toast.makeText(getApplicationContext(), "coœ siê zjeba³o", Toast.LENGTH_LONG).show();
 		}
-			
-			
-		Date d = new Date();
-		String dateStr = (String) date.getText();
-		String[] strTab = dateStr.split("/");
-		
-		d.setDate(Integer.valueOf(strTab[0]));
-		d.setMonth(Integer.valueOf(strTab[1]));
-		d.setYear(Integer.valueOf(strTab[2]));
-		
-		String timeStr = (String) time.getText();
-		strTab = timeStr.split(":");
-		d.setHours(Integer.valueOf(strTab[0]));
-		d.setMinutes(Integer.valueOf(strTab[1]));
-		event.setDate(d);
 		
 		if(event.validate()) {
-			MainActivity.addEvent(event);
+			eventDbAdapter = new EventDbAdapter(getApplicationContext());
+			eventDbAdapter.open();
+			try {
+				eventDbAdapter.insertEvent(event.getName(), event.getLatitude(), event.getLongitude(), event.getDescription(), event.getDate());
+			} catch (Exception e) {
+				Toast.makeText(getApplicationContext(), "coœ siê jeb³o", Toast.LENGTH_LONG).show();
+			}
+			eventDbAdapter.close();
 			return true;
 		} else {
 			Resources res = getResources();
@@ -113,17 +108,25 @@ public class AddEvent extends FragmentActivity implements OnDateSetListener, OnT
 			return false;
 		}
 	}
-	
+	/*
+	private void clearCompletedTasks(){
+	    if(todoCursor != null && todoCursor.moveToFirst()) {
+	        do {
+	            if(todoCursor.getInt(TodoDbAdapter.COMPLETED_COLUMN) == 1) {
+	                long id = todoCursor.getLong(TodoDbAdapter.ID_COLUMN);
+	                todoDbAdapter.deleteTodo(id);
+	            }
+	        } while (todoCursor.moveToNext());
+	    }
+	    updateListViewData();
+	}
+	*/
 	public void onClick(View view) {
 		switch(view.getId()) {
 		case R.id.pick_date:
 			DialogFragment dateFragment = new DatePickerFragment();
 			dateFragment.show(this.getSupportFragmentManager(), "datePicker");
 			break;
-		case R.id.pick_time:
-			DialogFragment timeFragment = new TimePickerFragment();
-			timeFragment.show(this.getSupportFragmentManager(), "timePicker");
-		    break;
 		case R.id.location:
 			this.startActivity(new Intent(AddEvent.this, EventsMap.class));
 			break;
@@ -142,29 +145,6 @@ public class AddEvent extends FragmentActivity implements OnDateSetListener, OnT
 		}
 	}
 	//===============================================================================
-	public static class TimePickerFragment extends DialogFragment implements android.app.TimePickerDialog.OnTimeSetListener {
-
-		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			// Use the current time as the default values for the picker
-			final Calendar c = Calendar.getInstance();
-			int hour = c.get(Calendar.HOUR_OF_DAY);
-			int minute = c.get(Calendar.MINUTE);
-
-			// Create a new instance of TimePickerDialog and return it
-			return new TimePickerDialog(getActivity(), (OnTimeSetListener)getActivity(), hour, minute, DateFormat.is24HourFormat(getActivity()));
-		}
-
-		public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-			// Do something with the time chosen by the user
-		}
-	}
-
-	public void onTimeSet(TimePicker arg0, int arg1, int arg2) {
-		time.setText(arg1+":"+arg2);
-		
-	}
-	//===============================================================================
 	public static class DatePickerFragment extends DialogFragment {
 
 		@Override
@@ -174,15 +154,23 @@ public class AddEvent extends FragmentActivity implements OnDateSetListener, OnT
 			int year = c.get(Calendar.YEAR);
 			int month = c.get(Calendar.MONTH);
 			int day = c.get(Calendar.DAY_OF_MONTH);
-
+			
+				
 			// Create a new instance of DatePickerDialog and return it
 			return new DatePickerDialog(getActivity(), (OnDateSetListener)getActivity(), year, month, day);
 		}
 
 	}
 
-	public void onDateSet(DatePicker arg0, int arg1, int arg2, int arg3) {
-		date.setText(arg3+"/"+arg2+"/"+arg1);
-		
+	public void onDateSet(DatePicker view, int year, int month, int day) {
+		d.setDate(day);
+		d.setMonth(month);
+		d.setYear(year);
+		int flags = 0;
+		flags |= DateUtils.FORMAT_SHOW_DATE;
+        flags |= DateUtils.FORMAT_SHOW_YEAR;
+		String str = DateUtils.formatDateTime(this, d.getTime(), flags);
+		description.setText(String.valueOf(d.getYear()));
+		date.setText(str);
 	}
 }
