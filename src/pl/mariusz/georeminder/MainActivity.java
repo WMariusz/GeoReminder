@@ -2,10 +2,15 @@ package pl.mariusz.georeminder;
 
 import java.util.ArrayList;
 import java.util.List;
-import android.app.Activity;
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,9 +18,8 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
-import android.widget.TextView;
 
-public class MainActivity extends Activity {
+public class MainActivity extends FragmentActivity {
 
 	private static List<Event> events;
 	private static EventsAdapter listAdapter;
@@ -63,7 +67,14 @@ public class MainActivity extends Activity {
 		}
 		return eventCursor;
 	}
-
+	
+	private void updateListViewData() {
+		eventCursor.requery();
+	    events.clear();
+	    updateTaskList();
+	    listAdapter.notifyDataSetChanged();
+	}
+	
 	private void updateTaskList() {
 		if(eventCursor != null && eventCursor.moveToFirst()) {
 			do {
@@ -73,11 +84,12 @@ public class MainActivity extends Activity {
 				double longitude = eventCursor.getDouble(EventDbAdapter.LONGITUDE_COLUMN);
 				String description = eventCursor.getString(EventDbAdapter.DESCRIPTION_COLUMN);
 				long date = eventCursor.getLong(EventDbAdapter.DATE_COLUMN);
-				events.add(new Event(id, name, latitude, longitude, description, date));
+				boolean completed = eventCursor.getInt(EventDbAdapter.COMPLETED_COLUMN) != 0;
+				events.add(new Event(id, name, latitude, longitude, description, date, completed));
 			} while(eventCursor.moveToNext());
 		}
 	}
-	/*
+	/**
 	 * zachowanie listy po kliknieciu na jej element
 	*/
 	private void initListViewOnItemClick() {
@@ -85,9 +97,15 @@ public class MainActivity extends Activity {
 	        
 			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 	        	Event event = events.get(position);
-	            //eventDbAdapter.updateEvent(event.getId(), event.getName(), event.getLatitude(), event.getLongitude(), event.getDescription());eventDbAdapter.updateEvent(event.getId(), event.getName(), event.getLatitude(), event.getLongitude(), event.getDescription());
-	            eventDbAdapter.deleteEvent(event.getId());
-	        	updateListViewData();
+	        	//eventDbAdapter.deleteEvent(event.getId());
+	        	if(event.isCompleted()) {
+	        		eventDbAdapter.updateEvent(event.getId(), event.getName(), event.getLatitude(), event.getLongitude(), 
+	        				event.getDescription(), event.getDate(), false);
+	        	} else {
+	        		eventDbAdapter.updateEvent(event.getId(), event.getName(), event.getLatitude(), event.getLongitude(), 
+	        				event.getDescription(), event.getDate(), true);
+	        	}
+	            updateListViewData();
 			}
 			
 	    });
@@ -97,19 +115,19 @@ public class MainActivity extends Activity {
 				/*
 				 * TODO:
 				 * 	- edycja eventu
+				 * 	- usuwanie
 				 */
+				DialogFragment df = new EventMenu();
+				Bundle args = new Bundle();
+		        args.putInt("pos", events.get(position).getId());
+		        df.setArguments(args);
+				df.show(getSupportFragmentManager(), "eventMenu");
 				return false;
 			}
 			
 		});
 	}
 	
-	private void updateListViewData() {
-		eventCursor.requery();
-	    events.clear();
-	    updateTaskList();
-	    listAdapter.notifyDataSetChanged();
-	}
 	@Override
 	protected void onDestroy() {
 		if(eventDbAdapter != null)
@@ -138,9 +156,47 @@ public class MainActivity extends Activity {
 	    case R.id.map:
 	    	this.startActivity(new Intent(MainActivity.this, EventsMap.class));
 	    	break;
-	    default:	
+	    default:
+	    	break;
 	    }
 
 	    return true;
-	}	
+	}
+	@SuppressLint("ValidFragment")
+	public class EventMenu extends DialogFragment {
+		@Override
+		public Dialog onCreateDialog(Bundle savedInstanceState) {
+			final int id = getArguments().getInt("pos");
+			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		    builder.setItems(R.array.eventMenu, new DialogInterface.OnClickListener() {
+		               public void onClick(DialogInterface dialog, int which) {
+		            	   switch(which) {
+		            	   case 0: // Edit
+		            		   Event e = new Event(eventDbAdapter.getEvent(id));
+		            		   Intent i = new Intent(MainActivity.this, AddEvent.class);
+		            		   i.putExtra("id", e.getId());
+		            		   i.putExtra("name", e.getName());
+		            		   i.putExtra("latitude", e.getLatitude());
+		            		   i.putExtra("longitude", e.getLongitude());
+		            		   i.putExtra("description", e.getDescription());
+		            		   i.putExtra("date", e.getDate());
+		            		   i.putExtra("completed", e.isCompleted());
+		            		   
+		            		   startActivity(i);
+		            		   
+		            		   //Toast.makeText(getApplicationContext(), "wybra³eœ opcjê edit elementu "+id, Toast.LENGTH_LONG).show();
+		            		   //updateListViewData();
+		            		   break;
+		            	   case 1: // Delete
+		            		   eventDbAdapter.deleteEvent(id);
+		            		   updateListViewData();
+		            		   break;
+		            	   default:
+		            		   break;
+		               }
+		           }
+		    });
+		    return builder.create();
+		}
+	}
 }

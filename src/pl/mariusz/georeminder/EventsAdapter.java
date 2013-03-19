@@ -1,11 +1,9 @@
 package pl.mariusz.georeminder;
 
-import java.util.Date;
 import java.util.List;
 
-import org.xmlpull.v1.XmlPullParser;
-
 import android.content.Context;
+import android.graphics.Paint;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +19,21 @@ public class EventsAdapter extends ArrayAdapter<Event> {
 	public EventsAdapter(Context context, int textViewResourceId, List<Event> objects) {
 		super(context, textViewResourceId, objects);
         resource = textViewResourceId;
+	}
+
+	// sprawdza czy tekst w TextView jest przekreœlony
+	/*private boolean isStrikeThrough(TextView tv) {
+	    int flags = tv.getPaintFlags();
+	    flags &= Paint.STRIKE_THRU_TEXT_FLAG;
+	    return flags == Paint.STRIKE_THRU_TEXT_FLAG;
+	}*/
+	
+	private void strikeThroughtText(TextView tv) {
+	    tv.setPaintFlags(tv.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+	}
+	
+	private void unStrikeThroughtText(TextView tv) {
+	    tv.setPaintFlags(tv.getPaintFlags() &~ Paint.STRIKE_THRU_TEXT_FLAG);
 	}
 
 	@Override
@@ -43,14 +56,26 @@ public class EventsAdapter extends ArrayAdapter<Event> {
 	    TextView tvEventName = (TextView) eventView.findViewById(R.id.nameInfo);
 	    TextView tvEventDesctiption = (TextView) eventView.findViewById(R.id.descriptionInfo);
 	    TextView tvEventDate = (TextView) eventView.findViewById(R.id.dateInfo);
+	    TextView tvEventDistance = (TextView) eventView.findViewById(R.id.distanceInfo);
 	    
 	    tvEventName.setText(eventName);
 	    tvEventDesctiption.setText(eventDescription);
-
-	    
-		int flags = DateUtils.FORMAT_SHOW_DATE;
+	    int flags = DateUtils.FORMAT_SHOW_DATE;
 		String str = android.text.format.DateUtils.formatDateTime(this.getContext(), eventDate, flags);
 		tvEventDate.setText(str);
+		tvEventDistance.setText(String.valueOf(event.getId()));
+		
+		if(event.isCompleted()) {
+			strikeThroughtText(tvEventName);
+			strikeThroughtText(tvEventDesctiption);
+			strikeThroughtText(tvEventDate);
+			//strikeThroughtText(tvEventRange);
+		} else {
+			unStrikeThroughtText(tvEventName);
+			unStrikeThroughtText(tvEventDesctiption);
+			unStrikeThroughtText(tvEventDate);
+			//unStrikeThroughtText(tvEventRange);
+		}
 		
 		return eventView;
 	}

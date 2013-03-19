@@ -1,6 +1,5 @@
 package pl.mariusz.georeminder;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -13,42 +12,79 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.format.DateUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class AddEvent extends FragmentActivity implements OnDateSetListener {
 	
-	private TextView name;
+	private EditText name;
 	private Button date;
-	private TextView description;
+	private EditText description;
+	private EditText location;
 	private EventDbAdapter eventDbAdapter;
 	private Date d; 
+	private Event event;
+	private boolean editMode = false;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_add_event);
-		d = new Date();
-        //int day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
-        //int month = Calendar.getInstance().get(Calendar.MONTH) + 1;
-        //int year = Calendar.getInstance().get(Calendar.YEAR);
+		initUiElements();
+		fillElements();
+	}
 
+	private void initUiElements() {
+		name = (EditText) findViewById(R.id.eventName);
+		description = (EditText) findViewById(R.id.description);
+		date = (Button) findViewById(R.id.pick_date);
+		location = (EditText) findViewById(R.id.location);
+		
+		
+		
+		if( name.getText().toString().length() == 0 )
+		    name.setError( getResources().getString(R.string.eventNameMissing) );
+		//if( description.getText().toString().length() == 0 )
+		//	description.setError( getResources().getString(R.id.eventDescriptionMissing) );
+		//if( location.getText().toString().length() == 0 )
+		//	location.setError( "First name is required!" );
+	}
+	
+	private void fillElements() {
+		Intent i = getIntent();
+		int _id = i.getIntExtra("id", -1);
+		if(_id >= 0) {
+			editMode = true;
+			String _name = i.getStringExtra("name");
+			long _latitude = i.getLongExtra("latitude", 0);
+			long _longitude = i.getLongExtra("longitude", 0);
+			String _description = i.getStringExtra("description");
+			long _date = i.getLongExtra("date", 0);
+			int b = i.getIntExtra("completed", 0);
+			boolean _completed = b !=0;
+			event = new Event(_id, _name, _latitude, _longitude, _description, _date, _completed);
+		}
+		
+		if(event != null) {
+			d = new Date(event.getDate());
+			name.setText(event.getName());
+			description.setText(event.getDescription());
+		} else {
+			d = new Date();
+		}
 		int flags = 0;
 		flags |= DateUtils.FORMAT_SHOW_DATE;
         flags |= DateUtils.FORMAT_SHOW_YEAR;
 		String str = DateUtils.formatDateTime(this, d.getTime(), flags);
-		
-		name = (TextView) findViewById(R.id.eventName);
-		description = (TextView) findViewById(R.id.description);
-		date = (Button) findViewById(R.id.pick_date);
 		date.setText(str);
-		description.setText(d.toString());
 	}
 
 	@Override
@@ -80,34 +116,34 @@ public class AddEvent extends FragmentActivity implements OnDateSetListener {
 	
 	@SuppressLint("SimpleDateFormat")
 	private boolean createEvent() {
-		Event event = new Event();		
-		
-		try {
+		if(validate()) {
 			event.setName(name.getText().toString());
 			event.setLatitude(0.0);
 			event.setLongitude(0.0);
 			event.setDescription(description.getText().toString());
 			event.setDate(d.getTime());
-		} catch (Exception e) {	
-			Toast.makeText(getApplicationContext(), "coœ siê zjeba³o", Toast.LENGTH_LONG).show();
-		}
-		
-		if(event.validate()) {
+			
 			eventDbAdapter = new EventDbAdapter(getApplicationContext());
 			eventDbAdapter.open();
-			try {
+			
+			if(editMode) {
+				eventDbAdapter.updateEvent(event);
+			} else {
 				eventDbAdapter.insertEvent(event.getName(), event.getLatitude(), event.getLongitude(), event.getDescription(), event.getDate());
-			} catch (Exception e) {
-				Toast.makeText(getApplicationContext(), "coœ siê jeb³o", Toast.LENGTH_LONG).show();
 			}
+			
 			eventDbAdapter.close();
 			return true;
 		} else {
-			Resources res = getResources();
-			Toast.makeText(getApplicationContext(), res.getString(R.string.addEventError), Toast.LENGTH_LONG).show();
 			return false;
 		}
 	}
+	
+	private boolean validate() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
 	/*
 	private void clearCompletedTasks(){
 	    if(todoCursor != null && todoCursor.moveToFirst()) {

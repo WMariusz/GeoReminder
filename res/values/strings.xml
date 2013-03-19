@@ -16,5 +16,7 @@
     <string name="cancel">Cancel</string>
     <string name="accept">Accept</string>
     <string name="addEventError">Correct or complete the fields</string>
+    <string name="eventNameMissing">Please insert event name</string>
+    <string name="eventDescriptionMissing">Please insert event description</string>
 
 </resources>

@@ -40,6 +40,26 @@ public class Event {
 		this.completed = completed;
 	}
 	
+	public Event (int id, String name, double latitude, double longitude, String description, long date, boolean completed) {
+		this.id = id;
+		this.name = name;
+		this.latitude = latitude;
+		this.longitude = longitude;
+		this.description = description;
+		this.date = date;
+		this.completed = completed;
+	}
+	
+	public Event (Event e) {
+		this.id = e.id;
+		this.name = e.name;
+		this.latitude = e.latitude;
+		this.longitude = e.longitude;
+		this.description = e.description;
+		this.date = e.date;
+		this.completed = e.completed;
+	}
+	
 	public int getId() {
 		return id;
 	}
