@@ -50,8 +50,8 @@ public class AddEvent extends FragmentActivity implements OnDateSetListener {
 		
 		
 		
-		if( name.getText().toString().length() == 0 )
-		    name.setError( getResources().getString(R.string.eventNameMissing) );
+		//if( name.getText().toString().length() == 0 )
+		//    name.setError( getResources().getString(R.string.eventNameMissing) );
 		//if( description.getText().toString().length() == 0 )
 		//	description.setError( getResources().getString(R.id.eventDescriptionMissing) );
 		//if( location.getText().toString().length() == 0 )
@@ -71,14 +71,12 @@ public class AddEvent extends FragmentActivity implements OnDateSetListener {
 			int b = i.getIntExtra("completed", 0);
 			boolean _completed = b !=0;
 			event = new Event(_id, _name, _latitude, _longitude, _description, _date, _completed);
-		}
-		
-		if(event != null) {
 			d = new Date(event.getDate());
 			name.setText(event.getName());
 			description.setText(event.getDescription());
 		} else {
 			d = new Date();
+			event = new Event();
 		}
 		int flags = 0;
 		flags |= DateUtils.FORMAT_SHOW_DATE;
@@ -125,13 +123,11 @@ public class AddEvent extends FragmentActivity implements OnDateSetListener {
 			
 			eventDbAdapter = new EventDbAdapter(getApplicationContext());
 			eventDbAdapter.open();
-			
 			if(editMode) {
 				eventDbAdapter.updateEvent(event);
 			} else {
 				eventDbAdapter.insertEvent(event.getName(), event.getLatitude(), event.getLongitude(), event.getDescription(), event.getDate());
 			}
-			
 			eventDbAdapter.close();
 			return true;
 		} else {
@@ -141,7 +137,7 @@ public class AddEvent extends FragmentActivity implements OnDateSetListener {
 	
 	private boolean validate() {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 	
 	/*
@@ -162,9 +158,6 @@ public class AddEvent extends FragmentActivity implements OnDateSetListener {
 		case R.id.pick_date:
 			DialogFragment dateFragment = new DatePickerFragment();
 			dateFragment.show(this.getSupportFragmentManager(), "datePicker");
-			break;
-		case R.id.location:
-			this.startActivity(new Intent(AddEvent.this, EventsMap.class));
 			break;
 		case R.id.mapButton:
 			this.startActivity(new Intent(AddEvent.this, EventsMap.class));
