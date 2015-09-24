@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/main" android:title="@string/title_activity_geo_reminder" android:visible="true"></item><item android:id="@+id/location" android:visible="true" android:title="@string/title_activity_location_view"></item>
-    <item android:id="@+id/add" android:title="@string/title_activity_add_event"></item>
-    <item android:id="@+id/map" android:title="@string/title_activity_events_map"></item>
-    
-    
-
-</menu>
