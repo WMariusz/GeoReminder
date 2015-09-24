@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">GeoReminder</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_location_view">Location</string>
+    <string name="title_activity_geo_reminder">GeoReminder</string>
+    <string name="title_activity_add_event">Add Event</string>
+    <string name="eventNameField">Event name</string>
+    <string name="dataTimeField">Deadline</string>
+    <string name="locationField">Location</string>
+    <string name="descriptionField">Desctiption</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_events_map">Events Map</string>
+    <string name="pick_time">Pick time</string>
+    <string name="cancel">Cancel</string>
+    <string name="accept">Accept</string>
+    <string name="addEventError">Correct or complete the fields</string>
+    <string name="eventNameMissing">Please insert event name</string>
+    <string name="eventDescriptionMissing">Please insert event description</string>
+
+</resources>
